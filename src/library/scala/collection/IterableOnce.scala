@@ -40,6 +40,19 @@ import scala.reflect.ClassTag
   * @define coll collection
   */
 trait IterableOnce[+A] extends Any {
+  /**
+   * 这里有个问题，下面这个应该是定义的方法吧  但我一直没看到实现呢？
+   * 在kafka源码中，有使用Iterable的foreach方法，而Iterable的foreach方法是继承自IterableOnceOps，而在foreach里面调用了下面这个方法。
+   * 但我一直没找到实现，在kafka源码中传入的Iterable参数，实现类实际是Set类型，Set类型有继承Iterable，但是我在Set中也没找到下面方法的实现类。
+   *
+   * 对应在kafka中的使用场景是：
+   * def onLeadershipChange(updatedLeaders: Iterable[Partition], updatedFollowers: Iterable[Partition]): Unit ={
+   *    ...
+   *    updatedLeaders.foreach{...}
+   *    updatedFollowers.foreach{...}
+   * }
+   *
+   * */
   /** Iterator can be used only once */
   def iterator: Iterator[A]
 
