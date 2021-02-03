@@ -41,9 +41,11 @@ import scala.reflect.ClassTag
   */
 trait IterableOnce[+A] extends Any {
   /**
-   * 这里有个问题，下面这个应该是定义的方法吧  但我一直没看到实现呢？
+   * 这里有个问题，下面这个应该是定义的方法吧  但我一直没看到实现呢？ 在Set1有实现
    * 在kafka源码中，有使用Iterable的foreach方法，而Iterable的foreach方法是继承自IterableOnceOps，而在foreach里面调用了下面这个方法。
-   * 但我一直没找到实现，在kafka源码中传入的Iterable参数，实现类实际是Set类型，Set类型有继承Iterable，但是我在Set中也没找到下面方法的实现类。
+   * 但我一直没找到实现，在kafka源码中传入的Iterable参数，实现类实际是Set类型，Set类型有继承Iterable，但是我在Set中也没找到下面方法的实现类，
+   * 好像是找到了Set1，在Set1有实现,喔 这样的，如果1个元素找Set1 2个找Set2.。。一直到Set4，再多久是调用的HashSet了,这些都是有具体实现的。
+   * 如果是没有元素，就调用的EmptySet，这些都是有具体实现的。
    *
    * 对应在kafka中的使用场景是：
    * def onLeadershipChange(updatedLeaders: Iterable[Partition], updatedFollowers: Iterable[Partition]): Unit ={
@@ -51,6 +53,8 @@ trait IterableOnce[+A] extends Any {
    *    updatedLeaders.foreach{...}
    *    updatedFollowers.foreach{...}
    * }
+   *
+   *
    *
    * */
   /** Iterator can be used only once */
@@ -568,6 +572,9 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
    */
   def isTraversableAgain: Boolean = false
 
+  /**
+   * 这里的iterator，没看到有实现啊
+   * */
   /** Apply `f` to each element for its side effects
     *  Note: [U] parameter needed to help scalac's type inference.
     */

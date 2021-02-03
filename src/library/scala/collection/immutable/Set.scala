@@ -151,6 +151,10 @@ object Set extends IterableFactory[Set] {
     }
   }
 
+  /**
+   * 如果只有1个元素 会自动映射到Set1类上，同理2个元素映射到Set2.。。直到Set4过后就映射到HashSet上。没有元素映射到EmptySet上。
+   * 这种自动映射机制是如何做到的呢？
+   * */
   /** An optimized representation for immutable sets of size 1 */
   @SerialVersionUID(3L)
   final class Set1[A] private[collection] (elem1: A) extends AbstractSet[A] with StrictOptimizedIterableOps[A, Set, Set[A]] with Serializable {
@@ -164,7 +168,29 @@ object Set extends IterableFactory[Set] {
     def excl(elem: A): Set[A] =
       if (elem == elem1) Set.empty
       else this
+    /**
+     * Set1的话调用的是Iterator.single() 方法，这个方法是构建一个继承AbstractIterator的匿名内部类：
+     * def single[A](a: A): Iterator[A] = new AbstractIterator[A] {
+     * private[this] var consumed: Boolean = false
+     * def hasNext = !consumed
+     * def next() = if (consumed) empty.next() else { consumed = true; a }
+     * }
+     *
+     * 这个匿名内部类对hashNext的实现是：判断是否消费过。next()的逻辑是：如果消费过那么调用 empty.next() 这个方法会抛异常，否则就设置consumed为true表明消费过了，然后返回当前值a。
+     *
+     * 这里调用的empty.next() 中的empty方法实际返回的是一个匿名内部类对象的引用：
+     * private[this] val _empty: Iterator[Nothing] = new AbstractIterator[Nothing] {
+     * def hasNext = false
+     * def next() = throw new NoSuchElementException("next on empty iterator")
+     * override def knownSize: Int = 0
+     * }
+     * 这个匿名内部类的next()方法会抛异常。
+     *
+     * */
     def iterator: Iterator[A] = Iterator.single(elem1)
+    /**
+     * 然后foreach方法只是对Set1中仅有的一个元素调用传入的f方法来处理，没有返回值。
+     * */
     override def foreach[U](f: A => U): Unit = f(elem1)
     override def exists(p: A => Boolean): Boolean = p(elem1)
     override def forall(p: A => Boolean): Boolean = p(elem1)
